@@ -32,58 +32,80 @@ def get_power(input_path):
 
   return power
 
-def get_bit_pattern(numbers, significand):
-  keepers = numbers[:]
-  offset = len(bin(numbers[0][2:])) - 1
+def get_frequencies(nums):
+  longest = max(len(bin(n)[2:]) for n in nums)
   hgram = []
 
-  for _ in range(offset + 1):
-    hgram.append([0, 0]) # needed to prevent shared memory that occurs with [] * n
-    
+  for _ in range(longest):
+    hgram.append({ 0: 0, 1: 0 }) # needed to prevent shared memory that occurs with [] * n
+  
+  for shift in range(longest):
+    for num in nums:
+      bit_test = (num & (1 << shift))
+      bit = 0
+      if bit_test > 0: bit = 1
+      hgram[shift][bit] += 1
+
+  return hgram
+
+def get_bit_pattern(numbers, most_popular):
+  keepers = numbers[:]
+  longest = max(len(bin(n)[2:]) for n in numbers)
+  offset = longest - 1
+
+  print("OFF", offset)
+
+  hgram = get_frequencies(keepers)
+
   while offset >= 0:
+    print("OFFSET", offset)
+    print("KEEPERS", keepers)
+
     nums = keepers[:]
 
-    opp = significand ^ 1
-    mcb = opp
-    if hgram[offset][significand] >= hgram[offset][opp]:
-      mcb = significand
+    if len(nums) == 2:
+      pass
+
+    bit = None
+    print("OFF", offset)
+    if hgram[offset][0] == hgram[offset][1]:
+      if most_popular:
+        bit = 1
+      else:
+        bit = 0
+    else:
+      if most_popular:
+        bit = max(hgram[offset], key=hgram[offset].get)
+      else:
+        bit = min(hgram[offset], key=hgram[offset].get)
 
     for num in nums:
-      bit_test = num & (mcb << offset)
-      if bit_test != 0:
+      test = False
+      if bit == 0:
+        test = ((num & (1 << offset)) == 0)
+      else:
+        test = ((num & (1 << offset)) > 0)
+
+      if not test:
+        keepers.remove(num)
         if len(keepers) == 1:
           return keepers[0]
-        else:
-          keepers.remove(num)
     
+    hgram = get_frequencies(keepers)
     offset -= 1
+  
+  return keepers[0]
 
 def get_life_suppport(input_path):
   with open(input_path) as f:
     lines = f.readlines()
-    offset = len(lines[0]) - 1
-    keepers = [int("0b" + line, 2) for line in lines]
-    oxygen = 0
-    co2 = 0
-
-    for _ in range(offset + 1):
-      hgram.append([0, 0]) # needed to prevent shared memory that occurs with [] * n
-
-    for num in keepers:
-      first_bit = num & (1 << offset)
-      if first_bit == 0:
-        hgram[offset][0] += 1
-      else:
-        hgram[offset][1] += 1
-
     nums = [int("0b" + line, 2) for line in lines]
-    oxygen = get_bit_pattern(nums, 1)
-    co2 = get_bit_pattern(nums, 0)
+    oxygen = get_bit_pattern(nums[:], True)
+    co2 = get_bit_pattern(nums[:], False)
 
     return co2 * oxygen
 
 class TestDay3(unittest.TestCase):
-
     def test_part1(self):
       self.assertEqual(get_power("data/testinput3.txt"), 198)
       print("POW", get_power("data/input3.txt"))
@@ -93,4 +115,4 @@ class TestDay3(unittest.TestCase):
       print("LIFE", get_life_suppport("data/input3.txt"))
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()
