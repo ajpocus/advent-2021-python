@@ -56,13 +56,13 @@ def get_winning_board(nums, boards):
         return board
 
 def filter_funk(item):
-  return item is not None
+  return item is not None and item.is_winner()
 
 def get_losing_board(nums, boards):
   for num in nums:
-    remaining_boards = list(filter(filter_funk, boards))
-    if len(remaining_boards) == 1:
-      return remaining_boards[0]
+    remaining_winners = list(filter(filter_funk, boards))
+    if len(remaining_winners) == 1:
+      return remaining_winners[0]
 
     for idx, board in enumerate(boards):
       if board is not None and board.has_num(num) and board.is_winner():
