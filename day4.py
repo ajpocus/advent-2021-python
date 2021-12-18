@@ -59,14 +59,14 @@ def filter_funk(item):
   return item is not None and item.is_winner()
 
 def get_losing_board(nums, boards):
+  remainders = boards[:]
   for num in nums:
-    remaining_winners = list(filter(filter_funk, boards))
-    if len(remaining_winners) == 1:
-      return remaining_winners[0]
+    if len(remainders) == 1:
+      return remainders.pop()
 
     for idx, board in enumerate(boards):
       if board is not None and board.has_num(num) and board.is_winner():
-        boards[idx] = None
+        remainders[idx] = None
 
 def score(filename):
   with open(filename) as f:
@@ -98,6 +98,7 @@ class TestDay4(unittest.TestCase):
       print("SCORE", score("data/input4.txt"))
 
     def test_part2(self):
+      self.assertEqual(unscore("data/testinput4.txt"), 1924)
       print("SCORE LOSER", unscore("data/input4.txt"))
 if __name__ == '__main__':
   unittest.main()
