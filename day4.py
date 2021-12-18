@@ -4,9 +4,15 @@ import numpy as np
 def isblank(n):
   return n == "" or n == " " or n == "\n"
 
-class Board:
+# Code modified from https://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
+# Licensed under CC-BY-SA 4.0
+def chunks(lst, n):
+    """Return n-sized chunks from lst."""
+    return [lst[i:i + n] for i in range(0, len(lst), n)]
+
+class Board:  
   def __init__(self, raw_lines):
-    lines = raw_lines[1:] 
+    lines = raw_lines[1:]
     rows = [line.split(" ") for line in lines]
     rows = [[int(n) for n in row if not isblank(n)] for row in rows]
     self.rows = rows
@@ -32,7 +38,7 @@ class Board:
 
     return False
 
-  def score(self):    
+  def get_score(self):
     unmarked_numbers = []
     for row in self.rows:
       for n in row:
@@ -49,22 +55,49 @@ def get_winning_board(nums, boards):
       if board.has_num(num) and board.is_winner():
         return board
 
+def filter_funk(item):
+  return item is not None
+
+def get_losing_board(nums, boards):
+  for num in nums:
+    remaining_boards = list(filter(filter_funk, boards))
+    if len(remaining_boards) == 1:
+      return remaining_boards[0]
+
+    for idx, board in enumerate(boards):
+      if board is not None and board.has_num(num) and board.is_winner():
+        boards[idx] = None
+
 def score(filename):
   with open(filename) as f:
     lines = f.readlines()
     numline = lines[0]
     boardlines = lines[1:]
     nums = [int(n) for n in numline.split(",")]
-    raw_boards = np.split(np.array(boardlines), 3)
+    raw_boards = chunks(boardlines, 6)
     boards = [Board(b) for b in raw_boards]
 
     winning_board = get_winning_board(nums, boards)
-    return winning_board.score()
+    return winning_board.get_score()
+
+def unscore(filename):
+  with open(filename) as f:
+    lines = f.readlines()
+    numline = lines[0]
+    boardlines = lines[1:]
+    nums = [int(n) for n in numline.split(",")]
+    raw_boards = chunks(boardlines, 6)
+    boards = [Board(b) for b in raw_boards]
+
+    losing_board = get_losing_board(nums, boards)
+    return losing_board.get_score()
 
 class TestDay4(unittest.TestCase):
     def test_part1(self):
-      self.assertEqual(score("data/testinput4.txt"), 4512)
+      # self.assertEqual(score("data/testinput4.txt"), 4512)
       print("SCORE", score("data/input4.txt"))
 
+    def test_part2(self):
+      print("SCORE LOSER", unscore("data/input4.txt"))
 if __name__ == '__main__':
   unittest.main()
