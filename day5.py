@@ -2,8 +2,10 @@ import unittest
 
 class Line:
     def __init__(self, x1, y1, x2, y2):
-        self.start = (x1, y1)
-        self.end = (x2, y2)
+        self.x1 = x1
+        self.x2 = x2
+        self.y1 = y1
+        self.y2 = y2
 
     def is_vertical(self):
         return self.y1 == self.y2
@@ -42,7 +44,7 @@ def get_overlapping(lines):
             if line_idx == other_idx:
                 continue
             
-            if line.overlaps(other_line):
+            if line.overlaps(other_line) and line not in overlapping_lines:
                 overlapping_lines.append(line)
 
     return overlapping_lines
@@ -54,16 +56,24 @@ def draw_lines(lines):
             max_value = max(line.x1, line.y1, line.x2, line.y2)
 
     grid = []
-    for _ in range(max_value):
+    for _ in range(max_value + 1):
         row = []
-        for _ in range(max_value):
+        for _ in range(max_value + 1):
             row.append(0)
         
         grid.append(row)
     
     for line in lines:
         if line.is_horizontal():
+            y = line.y1
+            for x in range(line.x1, line.x2 + 1):
+                grid[x][y] += 1
+        else:
+            x = line.x1
+            for y in range(line.y1, line.y2 + 1):
+                grid[x][y] += 1
 
+    return grid
 
 def overlapping_points(filename):
     raw_lines = get_raw_lines(filename)
@@ -76,7 +86,7 @@ def overlapping_points(filename):
         for square in row:
             if square > 1:
                 points += 1
-    
+
     return points
 
 class TestDay5(unittest.TestCase):
