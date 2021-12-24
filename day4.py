@@ -58,15 +58,15 @@ def get_winning_board(nums, boards):
 def filter_funk(item):
   return item is not None and item.is_winner()
 
-def get_losing_board(nums, boards):
+def get_last_winner(nums, boards):
   remainders = boards[:]
+  winners = []
   for num in nums:
-    if len(remainders) == 1:
-      return remainders.pop()
-
     for idx, board in enumerate(boards):
-      if board is not None and board.has_num(num) and board.is_winner():
-        remainders[idx] = None
+      if board not in winners and board.has_num(num) and board.is_winner():
+        winners.append(board)
+  
+  return winners.pop()
 
 def score(filename):
   with open(filename) as f:
@@ -89,16 +89,20 @@ def unscore(filename):
     raw_boards = chunks(boardlines, 6)
     boards = [Board(b) for b in raw_boards]
 
-    losing_board = get_losing_board(nums, boards)
-    return losing_board.get_score()
+    last_winner = get_last_winner(nums, boards)
+    if last_winner is None:
+      raise Exception("Last winner can't be NoneType!")
+
+    return last_winner.get_score()
 
 class TestDay4(unittest.TestCase):
     def test_part1(self):
-      # self.assertEqual(score("data/testinput4.txt"), 4512)
+      self.assertEqual(score("data/testinput4.txt"), 4512)
       print("SCORE", score("data/input4.txt"))
 
     def test_part2(self):
       self.assertEqual(unscore("data/testinput4.txt"), 1924)
-      print("SCORE LOSER", unscore("data/input4.txt"))
+      print("SCORE LAST WINNER", unscore("data/input4.txt"))
+
 if __name__ == '__main__':
   unittest.main()
