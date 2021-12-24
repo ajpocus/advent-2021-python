@@ -7,3 +7,5 @@ Each day after day 2 is written as a single file, with tests to confirm that eve
 ## License
 
 Feel free to use my code! This project is released under the MIT license. See the LICENSE file in the project root for details.
+
+[1]: https://adventofcode.com/2021
